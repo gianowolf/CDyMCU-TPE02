@@ -16,13 +16,13 @@
 #define IS_SET(port, bit) port &(1 << bit)
 #define IS_CLR(port, bit) ~(port & (1 << bit))
 
-static int *timer_flag;            // posición de memoria donde se indica que se levantó el Flag de desbordamiento
+static int *timer0_flag;           // posición de memoria donde se indica que se levantó el Flag de desbordamiento
 static int *timer2_flag;           // posición de memoria donde se indica que se levantó el Flag de comparación del registro A para el Timer2
 static unsigned short count = 0;   // capaz de contar hasta 65,536s
 static unsigned short trigger = 0; // pasado este umbral se activa el timer_flag
 static short int initial = 0;      // valor a colocar en el TCNT0 para que produzca una interrupción cada 1ms
 
-void Init_Timer0()
+void Timer_Init_Timer0(int *flag)
 {
     /* Establezco el Timer0 en Modo Normal */
     CLR(TCCR0A, WGM00);
@@ -38,9 +38,12 @@ void Init_Timer0()
 
     /* Calculo el valor initial */
     initial = 256 - (1e-3) * F_CPU / 64;
+
+    /* Almaceno la dirección donde voy a indicar el flag de 1ms */
+    timer0_flag = flag;
 }
 
-void Init_Timer2(int *flag)
+void Timer_Init_Timer2(int *flag)
 {
     // a. Disable the Timer/Counter2 interrupts by clearing OCIE2x and TOIE2.
     CLR(TIMSK2, OCIE2A);
@@ -68,9 +71,6 @@ void Init_Timer2(int *flag)
     SET(TCCR2A, WGM21);
     CLR(TCCR2B, WGM22);
 
-    // d. To switch to asynchronous operation: Wait for TCN2xUB, OCR2xUB, and TCR2xUB.
-    //while (IS_CLR(ASSR,TCN2UB) && IS_CLR(ASSR,OCR2AUB) && IS_CLR(ASSR,TCR2AUB));
-
     // e. Clear the Timer/Counter2 Interrupt Flags.
     CLR(TIFR2, TOV2);
     CLR(TIFR2, OCF2A);
@@ -86,7 +86,7 @@ void Init_Timer2(int *flag)
     timer2_flag = flag;
 }
 
-void Enable_Timer()
+static void Enable_Timer()
 {
     /* Elijo el prescalador 1:64, entrada = 3 */
     SET(TCCR0B, CS00);
@@ -94,7 +94,7 @@ void Enable_Timer()
     CLR(TCCR0B, CS02);
 }
 
-void Disable_Timer()
+static void Disable_Timer()
 {
     /* Elijo el prescalador 0, entrada = 0 */
     CLR(TCCR0B, CS00);
@@ -102,9 +102,8 @@ void Disable_Timer()
     CLR(TCCR0B, CS02);
 }
 
-void Set_Delay(int ms, int *flag)
+void Timer_Set_Delay(int ms)
 {
-    timer_flag = flag;
     TCNT0 = initial; // valor para que el timer cuente 1ms
     count = 0;
     trigger = ms;
@@ -116,7 +115,7 @@ ISR(TIMER0_OVF_vect)
 {
     if (count++ == trigger)
     {
-        *timer_flag = 1; // Indico que transcurrió el tiempo de demora
+        *timer0_flag = 1; // Indico que transcurrió el tiempo de demora
 
         Disable_Timer();
         CLR(TIFR0, TOV0); // Limpio el Flag de Overflow porque hay que hacerlo manualmente

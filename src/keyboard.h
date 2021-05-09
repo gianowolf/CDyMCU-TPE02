@@ -14,7 +14,8 @@
 #define PININ PINC
 
 /*
-	Lee las entradas del Teclado, si se presionó una tecla retorna 1, y devuelve en key la tecla presionada
+	Lee las entradas del Teclado, si se presionó una tecla, en el 
+	flanco de bajada retorna 1, y devuelve en key la tecla presionada
 */
 unsigned char Keypad_Scan(unsigned char *key);
 

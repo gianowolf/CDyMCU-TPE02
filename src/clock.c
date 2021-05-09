@@ -5,31 +5,35 @@
  *  Author: Julián
  */
 
-static short int _hours = 0;
-static short int _minutes = 0;
-static short int _seconds = 0;
+static short int hours = 0;
+static short int minutes = 0;
+static short int seconds = 0;
+
+static char tempValue[] = {0, 0}; // valor que se va almacenando cuando se quiere cambiar la hora
+static char index = 0;            // posición en tempValue donde se está escribiendo
+
 /*
-	hours - Valor de la hora a establecer
+	Guarda la hora con lo que se cargó hasta el momento
 */
-void Clock_Set_Hour(short int hours)
+void Clock_Set_Hour()
 {
-    _hours = hours;
+    hours = tempValue[0] * 10 + tempValue[1];
 }
 
 /*
-	minutes - Valor de los minutos a establecer
+	Guarda los minutos con lo que se cargó hasta el momento
 */
 void Clock_Set_Minutes(short int minutes)
 {
-    _minutes = minutes;
+    minutes = tempValue[0] * 10 + tempValue[1];
 }
 
 /*
-	seconds - Valor de la seconds a establecer
+	Guarda los segundos con lo que se cargó hasta el momento
 */
 void Clock_Set_Seconds(short int seconds)
 {
-    _seconds = seconds;
+    seconds = tempValue[0] * 10 + tempValue[1];
 }
 
 /*
@@ -37,7 +41,7 @@ void Clock_Set_Seconds(short int seconds)
 */
 short int Clock_Get_Hours()
 {
-    return _hours;
+    return hours;
 }
 
 /*
@@ -45,7 +49,7 @@ short int Clock_Get_Hours()
 */
 short int Clock_Get_Minutes()
 {
-    return _minutes;
+    return minutes;
 }
 
 /*
@@ -53,7 +57,7 @@ short int Clock_Get_Minutes()
 */
 short int Clock_Get_Seconds()
 {
-    return _seconds;
+    return seconds;
 }
 
 /*
@@ -61,10 +65,36 @@ short int Clock_Get_Seconds()
 */
 void Clock_Tick()
 {
-    short int secondOverflow = (_seconds == 59);
-    short int minuteOverflow = (_minutes == 59);
+    short int secondOverflow = (seconds == 59);
+    short int minuteOverflow = (minutes == 59);
 
-    _seconds = (_seconds + 1) % 60;
-    _minutes = (_minutes + secondOverflow) % 60;
-    _hours = (_hours + minuteOverflow) % 24;
+    seconds = (seconds + 1) % 60;
+    minutes = (minutes + secondOverflow) % 60;
+    hours = (hours + minuteOverflow) % 24;
+}
+
+/*
+    Devuelve si se termino de ingresar la hora o no
+*/
+char Clock_End()
+{
+    return index == 2;
+}
+
+/*
+    Limpia todas las variables internas devolviendo al reloj a un estado por defecto
+*/
+void Clock_Clean()
+{
+    tempValue[0] = 0;
+    tempValue[1] = 0;
+    index = 0;
+}
+
+/*
+    Almacena temporalmente el dígito que se envía
+*/
+void Clock_SendDigit(short int digit)
+{
+    tempValue[index++] = digit;
 }

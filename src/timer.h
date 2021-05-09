@@ -12,17 +12,19 @@
 #define F_CPU 8000000UL
 #endif
 
-void Init_Timer0();
+/*
+	flag -	Posición de memoria donde se avisará que se estableció el Flag TOV0
+*/
+void Timer_Init_Timer0(int *flag);
 
 /*
-	flag - Posición de memoria donde se va a escribir un 1 cuando transcurra 1s
+	flag -	Posición de memoria donde se va a escribir un 1 cuando transcurra 1s
 */
-void Init_Timer2(int *flag);
+void Timer_Init_Timer2(int *flag);
 
 /**
-* ms -		Cantidad de ms que se desea que sea el retardo
-* flag -	Posición de memoria donde se avisará que se estableció el Flag TOV0
+	ms -	Cantidad de ms que se desea que sea el retardo
 */
-void Set_Delay(int ms, int *flag);
+void Timer_Set_Delay(int ms);
 
 #endif /* TIMER_H_ */
